@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#EEF3F6" />
+  <title>Mesa de Memórias</title>
+  <meta name="description" content="Compartilhe suas fotos e vídeos do nosso casamento numa galeria ao vivo." />
+  <link rel="icon" type="image/png" href="/nexus-np.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow" data-noivos>Pamella &amp; André</p>
+    <div class="rule"></div>
+    <h1>Mesa de Memórias</h1>
+    <p class="sub">Ajude a contar a história do nosso dia: adicione uma foto ou vídeo do seu celular — e deixe um recado carinhoso.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="enviar">Enviar</button>
+    <button class="tab" data-tab="galeria">Galeria</button>
+  </div>
+
+  <section class="panel active" id="panel-enviar">
+    <div class="card">
+      <label class="field-label">Seu nome</label>
+      <input type="text" id="guestName" placeholder="Ex: Fernanda e Lucas">
+
+      <label class="field-label">Recado (opcional)</label>
+      <input type="text" id="guestMsg" placeholder="Deixe um recado carinhoso...">
+
+      <label class="field-label">Momento</label>
+      <div class="tag-picker" id="tagPicker">
+        <button type="button" class="tag-chip active" data-tag="Cerimônia">Cerimônia</button>
+        <button type="button" class="tag-chip" data-tag="Recepção">Recepção</button>
+        <button type="button" class="tag-chip" data-tag="Festa">Festa</button>
+        <button type="button" class="tag-chip" data-tag="Pista">Pista</button>
+      </div>
+
+      <label class="field-label">Foto ou vídeo</label>
+      <div class="capture-zone" id="captureZone">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5E7C90" stroke-width="1.4"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        <div class="cta-text">Toque para adicionar</div>
+        <div class="cta-sub">escolha uma foto ou vídeo do seu celular</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*,video/*">
+
+      <div class="preview-box" id="previewBox"></div>
+
+      <button class="primary" id="sendBtn" disabled>Enviar momento</button>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-galeria">
+    <div class="gallery-head">
+      <span class="count"><b id="countNum">0</b> momentos</span>
+      <span style="display:flex;align-items:center;gap:14px;">
+        <button class="export-btn" id="exportBtn" title="Baixar todos os momentos compactados">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          Baixar tudo (.zip)
+        </button>
+        <span class="live-dot" id="liveDot">ao vivo</span>
+      </span>
+    </div>
+
+    <div id="trayWrap" style="display:none;">
+      <p class="tray-label">Momentos recentes</p>
+      <div class="tray" id="tray"></div>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C8791" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar por nome ou recado...">
+        <button class="search-clear" id="searchClear" style="display:none;">&times;</button>
+      </div>
+    </div>
+    <div class="filter-row" id="filterRow">
+      <button class="filter-chip active" data-filter="all">Todos</button>
+      <button class="filter-chip" data-filter="photo">Fotos</button>
+      <button class="filter-chip" data-filter="video">Vídeos</button>
+      <span class="filter-sep"></span>
+      <button class="filter-chip" data-tag="Cerimônia">Cerimônia</button>
+      <button class="filter-chip" data-tag="Recepção">Recepção</button>
+      <button class="filter-chip" data-tag="Festa">Festa</button>
+      <button class="filter-chip" data-tag="Pista">Pista</button>
+    </div>
+
+    <div class="board" id="board"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="big">Nada encontrado por aqui</div>
+      <div>Tente outra busca ou filtro ✿</div>
+    </div>
+  </section>
+
+  <footer class="note">
+    <img class="brand-logo" src="/nexus-np.png" alt="Nexus PH">
+    <span class="brand-cap">Nexus Moments</span>
+  </footer>
+</div>
+
+<!-- Lightbox / visualizador -->
+<div class="stories" id="stories" aria-hidden="true">
+  <div class="st-stage" id="stStage"></div>
+  <div class="st-scrim"></div>
+  <div class="st-progress" id="stProgress"></div>
+  <div class="st-header">
+    <div class="st-avatar" id="stAvatar"><span></span></div>
+    <div class="st-headtext">
+      <span class="st-name" id="stName"></span>
+      <span class="st-sub" id="stSub"></span>
+    </div>
+    <button class="st-dl" id="stDownload" aria-label="Baixar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+    </button>
+    <button class="st-close" id="stClose" aria-label="Fechar">&times;</button>
+  </div>
+  <div class="st-caption" id="stCaption"></div>
+  <div class="st-react">
+    <button class="st-heart" id="stHeart" aria-label="Curtir">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>
+    </button>
+  </div>
+  <button class="st-tap st-tap-prev" id="stPrev" aria-label="Anterior"></button>
+  <button class="st-tap st-tap-next" id="stNext" aria-label="Próximo"></button>
+</div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

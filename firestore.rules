@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────
+// Regras do Firestore — coleção "moments"
+// Objetivo: convidados podem criar e ler momentos; ninguém pode
+// editar/apagar pelo cliente (isso protege a galeria de bagunça).
+// A curtida usa incremento controlado (só o campo "likes", +1 ou -1).
+// ─────────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /moments/{momentId} {
+
+      // Qualquer pessoa com o link pode LER a galeria.
+      allow read: if true;
+
+      // CRIAR: valida o formato do documento para evitar lixo.
+      allow create: if
+        request.resource.data.keys().hasOnly(
+          ['name','message','tag','isVideo','url','storagePath','likes','createdAt']
+        )
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 280
+        && request.resource.data.tag is string
+        && request.resource.data.isVideo is bool
+        && request.resource.data.url is string
+        && request.resource.data.storagePath is string
+        && request.resource.data.likes == 0
+        && request.resource.data.createdAt == request.time;
+
+      // ATUALIZAR: permitido SOMENTE para curtir/descurtir
+      // (apenas o campo "likes" muda, variando de 1 para mais ou para menos).
+      allow update: if
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+        && request.resource.data.likes is int
+        && request.resource.data.likes >= 0
+        && (request.resource.data.likes == resource.data.likes + 1
+            || request.resource.data.likes == resource.data.likes - 1);
+
+      // DELETAR pelo cliente: proibido. (Faça pelo Console, se precisar.)
+      allow delete: if false;
+    }
+  }
+}

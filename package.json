@@ -1,0 +1,26 @@
+{
+  "name": "photobooth-casamento",
+  "version": "1.0.0",
+  "description": "Mesa de Memórias — photo booth digital para casamento (Nexus Moments). Convidados sobem fotos e vídeos via QR Code; galeria ao vivo com visualização estilo stories.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "casamento",
+    "wedding",
+    "photobooth",
+    "firebase",
+    "nexus-moments"
+  ],
+  "author": "Nexus PH",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "firebase": "^10.12.2"
+  },
+  "devDependencies": {
+    "vite": "^5.3.1"
+  }
+}
