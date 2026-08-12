@@ -18,6 +18,8 @@
   "author": "Nexus PH",
   "license": "UNLICENSED",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.640.0",
+    "@aws-sdk/s3-request-presigner": "^3.640.0",
     "firebase": "^10.12.2"
   },
   "devDependencies": {

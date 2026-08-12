@@ -1,11 +1,12 @@
 // ─────────────────────────────────────────────────────────────
-// Camada de dados (o "back-end" do app roda no Firebase):
-//   • Cloud Storage guarda as mídias (fotos/vídeos)
+// Camada de dados:
+//   • Cloudflare R2 guarda as mídias (fotos/vídeos), via URL assinada
+//     gerada pela function serverless em /api/presign-upload
 //   • Firestore guarda os metadados (nome, recado, tag, url, likes...)
-// Este módulo concentra TODA a conversa com o Firebase, para o resto
-// do app não precisar conhecer os detalhes.
+// Este módulo concentra TODA a conversa com esses serviços, para o
+// resto do app não precisar conhecer os detalhes.
 // ─────────────────────────────────────────────────────────────
-import { db, storage } from "./firebase.js";
+import { db } from "./firebase.js";
 import {
   collection,
   addDoc,
@@ -17,25 +18,37 @@ import {
   increment,
   serverTimestamp,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const COL = "moments";
 
 /**
- * Envia um momento: sobe o arquivo no Storage e grava o metadado no Firestore.
+ * Envia um momento: pede uma URL assinada (R2), sobe o arquivo DIRETO
+ * pro bucket, e grava o metadado no Firestore.
  * @param {{ blob: Blob, name: string, message: string, tag: string, isVideo: boolean }} data
  * @param {(pct:number)=>void} [onProgress] callback simples de progresso (0–100)
  */
 export async function uploadMoment({ blob, name, message, tag, isVideo }, onProgress) {
-  const ext = isVideo ? guessVideoExt(blob.type) : "jpg";
-  const fileName = `momentos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const storageRef = ref(storage, fileName);
+  const contentType = blob.type || (isVideo ? "video/mp4" : "image/jpeg");
 
-  onProgress?.(10);
-  await uploadBytes(storageRef, blob, { contentType: blob.type || (isVideo ? "video/mp4" : "image/jpeg") });
-  onProgress?.(70);
+  onProgress?.(5);
+  const presignRes = await fetch("/api/presign-upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contentType, isVideo, size: blob.size }),
+  });
+  if (!presignRes.ok) {
+    const { error } = await presignRes.json().catch(() => ({}));
+    throw new Error(error || "Não consegui preparar o envio.");
+  }
+  const { uploadUrl, publicUrl, key } = await presignRes.json();
+  onProgress?.(15);
 
-  const url = await getDownloadURL(storageRef);
+  const putRes = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: blob,
+  });
+  if (!putRes.ok) throw new Error("Falha ao subir o arquivo.");
   onProgress?.(85);
 
   await addDoc(collection(db, COL), {
@@ -43,8 +56,8 @@ export async function uploadMoment({ blob, name, message, tag, isVideo }, onProg
     message: (message || "").trim().slice(0, 280),
     tag: tag || "",
     isVideo: !!isVideo,
-    url,
-    storagePath: fileName,
+    url: publicUrl,
+    storagePath: key,
     likes: 0,
     createdAt: serverTimestamp(),
   });
@@ -92,11 +105,4 @@ export async function fetchMomentBytes(item) {
   if (!res.ok) throw new Error(`Falha ao baixar ${item.id}: ${res.status}`);
   const buf = await res.arrayBuffer();
   return new Uint8Array(buf);
-}
-
-function guessVideoExt(mime = "") {
-  if (mime.includes("mp4")) return "mp4";
-  if (mime.includes("quicktime")) return "mov";
-  if (mime.includes("webm")) return "webm";
-  return "mp4";
 }
