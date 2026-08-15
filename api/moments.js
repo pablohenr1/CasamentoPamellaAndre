@@ -43,7 +43,9 @@ async function handleList(req, res) {
     return res.status(200).json(items);
   } catch (err) {
     console.error("[GET /api/moments]", err);
-    return res.status(500).json({ error: "Falha ao carregar a galeria" });
+    // DEBUG TEMPORÁRIO — expõe o erro real pra diagnosticar o 500 em produção.
+    // Reverter assim que resolver (não deixar mensagem de erro crua exposta).
+    return res.status(500).json({ error: "Falha ao carregar a galeria", debug: String(err?.stack || err) });
   }
 }
 
