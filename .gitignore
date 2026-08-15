@@ -26,3 +26,5 @@ Thumbs.db
 # Firebase (cache local, se usar a CLI)
 .firebase/
 firebase-debug.log
+
+.vercel

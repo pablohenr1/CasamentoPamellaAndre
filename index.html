@@ -51,6 +51,20 @@
 
       <div class="preview-box" id="previewBox"></div>
 
+      <div class="trim-box" id="trimBox">
+        <video id="trimVideo" muted playsinline></video>
+        <input type="range" id="trimRange" class="trim-range" min="0" max="0" step="0.05" value="0">
+        <div class="trim-info">
+          <span id="trimLabel">0:00 – 0:00</span>
+          <button type="button" class="trim-play-btn" id="trimPlayBtn">▶ Prévia</button>
+        </div>
+        <p class="trim-hint">
+          Esse vídeo tem <b id="trimHintTotal">0</b>s — arraste pra escolher os
+          <b id="trimHintMax">0</b>s que quer usar.
+        </p>
+        <button type="button" class="trim-confirm-btn" id="trimConfirmBtn">Usar este trecho ✓</button>
+      </div>
+
       <button class="primary" id="sendBtn" disabled>Enviar momento</button>
       <div class="status-msg" id="statusMsg"></div>
     </div>

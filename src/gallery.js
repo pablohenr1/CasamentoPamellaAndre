@@ -3,7 +3,7 @@
 // busca, filtros e o "Baixar tudo (.zip)".
 // Recebe os momentos em tempo real e abre o visualizador de stories.
 // ─────────────────────────────────────────────────────────────
-import { EVENTO } from "./firebase.js";
+import { EVENTO } from "./config.js";
 import { listenMoments, fetchMomentBytes } from "./momentsService.js";
 import { buildZip } from "./zip.js";
 import { escapeHtml, normalize, safeName, extFromMime, downloadBlob } from "./utils.js";
@@ -25,7 +25,7 @@ export function initGallery() {
   const tray = document.getElementById("tray");
   const exportBtn = document.getElementById("exportBtn");
 
-  // Escuta a galeria em tempo real (Firestore onSnapshot)
+  // Escuta a galeria (polling em /api/moments)
   listenMoments((items) => {
     allEntries = items;
     render();

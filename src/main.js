@@ -3,7 +3,7 @@
 // liga as abas e inicializa os módulos de envio e galeria.
 // ─────────────────────────────────────────────────────────────
 import "./styles.css";
-import { EVENTO } from "./firebase.js";
+import { EVENTO } from "./config.js";
 import { initUpload } from "./upload.js";
 import { initGallery } from "./gallery.js";
 
